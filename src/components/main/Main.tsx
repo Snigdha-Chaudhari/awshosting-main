@@ -75,14 +75,6 @@ const Main = (props: Props) => {
     setEditingId(null);
   };
 
-  const changePriority = (id: string, newPriority: 'low' | 'medium' | 'high') => {
-    const newTodos = todos.map(todo => 
-      todo.id === id ? { ...todo, priority: newPriority } : todo
-    );
-    setTodos(newTodos);
-    localStorage.setItem("todos", JSON.stringify(newTodos));
-  };
-
   const clearCompleted = () => {
     const newTodos = todos.filter(todo => !todo.completed);
     setTodos(newTodos);
@@ -107,33 +99,60 @@ const Main = (props: Props) => {
     }
   };
 
+  // Fix: Safely filter todos based on search term with null checks
   const filteredTodos = todos
     .filter(todo => {
       if (filter === 'active') return !todo.completed;
       if (filter === 'completed') return todo.completed;
       return true;
     })
-    .filter(todo => todo.text.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(todo => {
+      // Fix: Add null/undefined check before calling toLowerCase
+      const todoText = todo.text || '';
+      const search = searchTerm || '';
+      return todoText.toLowerCase().includes(search.toLowerCase());
+    })
     .sort((a, b) => {
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     });
 
   useEffect(() => {
-    const savedTodos = localStorage.getItem("todos");
-    
-    if (savedTodos) {
-      setTodos(JSON.parse(savedTodos));
+    try {
+      const savedTodos = localStorage.getItem("todos");
+      
+      if (savedTodos) {
+        const parsed = JSON.parse(savedTodos);
+        
+        // Ensure every todo has the required fields
+        const validTodos = parsed.map((todo: any) => ({
+          id: todo.id || Date.now().toString() + Math.random().toString(),
+          text: todo.text || '',
+          completed: Boolean(todo.completed),
+          priority: ['low', 'medium', 'high'].includes(todo.priority) ? todo.priority : 'medium',
+          createdAt: todo.createdAt || Date.now()
+        }));
+        
+        setTodos(validTodos);
+      }
+    } catch (error) {
+      console.error("Error loading todos from localStorage:", error);
+      // If there's an error, start with an empty array
+      setTodos([]);
     }
   }, []);
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString(undefined, { 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit'
-    });
+    try {
+      return new Date(timestamp).toLocaleDateString(undefined, { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   return (
@@ -274,7 +293,7 @@ const Main = (props: Props) => {
                               : "text-gray-800"
                           } break-all`}
                         >
-                          {todo.text}
+                          {todo.text || ""}
                         </p>
                         <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
                           <span>{getPriorityLabel(todo.priority)}</span>
