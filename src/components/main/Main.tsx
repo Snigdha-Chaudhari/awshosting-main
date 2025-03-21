@@ -1,6 +1,5 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
-import { Plus, CheckCircle, Trash2, X, AlertCircle, Clock, Filter, Edit } from "lucide-react";
 
 type TodoItem = {
   id: string;
@@ -99,12 +98,12 @@ const Main = (props: Props) => {
     }
   };
 
-  const getPriorityIcon = (priority: string) => {
+  const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'high': return <AlertCircle size={14} className="text-red-500" />;
-      case 'medium': return <Clock size={14} className="text-yellow-500" />;
-      case 'low': return <CheckCircle size={14} className="text-green-500" />;
-      default: return null;
+      case 'high': return '⚠️ High';
+      case 'medium': return '⏱️ Medium';
+      case 'low': return '✓ Low';
+      default: return priority;
     }
   };
 
@@ -159,7 +158,7 @@ const Main = (props: Props) => {
                 type="submit"
                 className="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white p-3 rounded-r-lg flex items-center justify-center"
               >
-                <Plus size={20} />
+                +
               </button>
             </div>
             
@@ -196,7 +195,7 @@ const Main = (props: Props) => {
 
         <div className="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
           <div className="flex items-center space-x-2">
-            <Filter size={16} className="text-gray-500" />
+            <span className="text-gray-500 text-sm">🔍</span>
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
               <button 
                 onClick={() => setFilter('all')}
@@ -248,11 +247,11 @@ const Main = (props: Props) => {
                       className="flex-grow p-2 border border-gray-300 rounded"
                       autoFocus
                     />
-                    <button onClick={saveEdit} className="text-blue-500 hover:text-blue-700">
-                      <CheckCircle size={18} />
+                    <button onClick={saveEdit} className="text-blue-500 hover:text-blue-700 px-2">
+                      ✓
                     </button>
-                    <button onClick={cancelEdit} className="text-red-500 hover:text-red-700">
-                      <X size={18} />
+                    <button onClick={cancelEdit} className="text-red-500 hover:text-red-700 px-2">
+                      ✕
                     </button>
                   </div>
                 ) : (
@@ -260,12 +259,11 @@ const Main = (props: Props) => {
                     <div className="flex items-center space-x-3 flex-grow">
                       <button
                         onClick={() => toggleComplete(todo.id)}
-                        className={`text-gray-400 hover:text-green-500 transition-colors flex-shrink-0`}
+                        className={`text-gray-400 hover:text-green-500 transition-colors flex-shrink-0 w-6 h-6 flex items-center justify-center border rounded-full ${
+                          todo.completed ? "bg-green-500 border-green-500 text-white" : "border-gray-300"
+                        }`}
                       >
-                        <CheckCircle 
-                          size={20} 
-                          className={todo.completed ? "text-green-500 fill-green-500" : ""} 
-                        />
+                        {todo.completed ? "✓" : ""}
                       </button>
                       
                       <div className="min-w-0 flex-grow">
@@ -279,28 +277,25 @@ const Main = (props: Props) => {
                           {todo.text}
                         </p>
                         <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            {getPriorityIcon(todo.priority)}
-                            <span className="capitalize">{todo.priority}</span>
-                          </div>
+                          <span>{getPriorityLabel(todo.priority)}</span>
                           <span>•</span>
                           <span>{formatDate(todo.createdAt)}</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-1 ml-2">
+                    <div className="flex items-center space-x-2 ml-2">
                       <button
                         onClick={() => startEditing(todo)}
-                        className="text-gray-400 hover:text-blue-500 transition-colors"
+                        className="text-gray-400 hover:text-blue-500 transition-colors px-1"
                       >
-                        <Edit size={16} />
+                        ✎
                       </button>
                       <button
                         onClick={() => handleDelete(todo.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="text-gray-400 hover:text-red-500 transition-colors px-1"
                       >
-                        <Trash2 size={16} />
+                        🗑️
                       </button>
                     </div>
                   </div>
